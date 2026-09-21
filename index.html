@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Downloader — Tools</title>
+    <style>
+        /* ===== RESET ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --tiktok-pink: #FE2C55;
+            --tiktok-cyan: #25F4EE;
+            --dark: #000000;
+            --dark-2: #111111;
+            --dark-3: #1a1a1a;
+            --dark-4: #222222;
+            --text: #ffffff;
+            --text-muted: #888888;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== BACKGROUND ===== */
+        .bg-glow {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            background: var(--dark);
+        }
+        .bg-glow::before,
+        .bg-glow::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+        }
+        .bg-glow::before {
+            width: 500px; height: 500px;
+            background: var(--tiktok-pink);
+            top: -150px; left: -100px;
+            animation: float 12s infinite ease-in-out;
+        }
+        .bg-glow::after {
+            width: 500px; height: 500px;
+            background: var(--tiktok-cyan);
+            bottom: -150px; right: -100px;
+            animation: float 15s infinite ease-in-out reverse;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(60px, 60px); }
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 16px 24px;
+        }
+        .nav-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 900;
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--tiktok-pink), var(--tiktok-cyan));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            position: relative;
+        }
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--tiktok-cyan), var(--tiktok-pink));
+            border-radius: 10px;
+            opacity: 0;
+            transition: 0.3s;
+        }
+        .logo:hover .logo-icon::before { opacity: 1; }
+        .logo-text {
+            background: linear-gradient(90deg, var(--tiktok-pink), var(--tiktok-cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+        .nav-status span {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px 30px;
+            text-align: center;
+        }
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(254, 44, 85, 0.1);
+            border: 1px solid rgba(254, 44, 85, 0.3);
+            color: var(--tiktok-pink);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-size: clamp(32px, 6vw, 56px);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 12px;
+            letter-spacing: -1.5px;
+        }
+        .hero h1 .grad {
+            background: linear-gradient(90deg, var(--tiktok-pink), var(--tiktok-cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            color: var(--text-muted);
+            font-size: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ===== TABS ===== */
+        .tabs {
+            max-width: 900px;
+            margin: 30px auto 0;
+            padding: 0 24px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab {
+            flex: 1;
+            min-width: 130px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+        }
+        .tab.active {
+            background: linear-gradient(135deg, rgba(254, 44, 85, 0.2), rgba(37, 244, 238, 0.2));
+            border-color: var(--tiktok-pink);
+            color: white;
+            box-shadow: 0 0 30px rgba(254, 44, 85, 0.15);
+        }
+
+        /* ===== PANELS ===== */
+        .panel {
+            display: none;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px 24px 80px;
+        }
+        .panel.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== SEARCH BOX ===== */
+        .search-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 24px;
+        }
+        .search-box label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .input-group input {
+            flex: 1;
+            min-width: 200px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 16px 20px;
+            color: white;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: 0.2s;
+        }
+        .input-group input:focus {
+            border-color: var(--tiktok-pink);
+            box-shadow: 0 0 0 3px rgba(254, 44, 85, 0.15);
+        }
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+        .btn-main {
+            background: linear-gradient(135deg, var(--tiktok-pink), #ff1f5a);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .btn-main:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(254, 44, 85, 0.4);
+        }
+        .btn-main:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 16px 28px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* ===== FEATURES MINI ===== */
+        .mini-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .mini-feat {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 16px;
+            transition: 0.2s;
+        }
+        .mini-feat:hover {
+            border-color: rgba(254, 44, 85, 0.3);
+            transform: translateY(-2px);
+        }
+        .mini-feat-icon {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+        .mini-feat-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 2px;
+        }
+        .mini-feat-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ===== RESULT CARD ===== */
+        .result-container {
+            margin-top: 24px;
+            display: none;
+        }
+        .result-container.show {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        .video-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 640px) {
+            .video-card {
+                grid-template-columns: 200px 1fr;
+                align-items: start;
+            }
+        }
+        .video-thumb {
+            aspect-ratio: 9 / 16;
+            background: var(--dark-3);
+            position: relative;
+            overflow: hidden;
+        }
+        .video-thumb img,
+        .video-thumb video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .video-info {
+            padding: 20px;
+        }
+        .video-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .video-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--tiktok-pink), var(--tiktok-cyan));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 15px;
+            color: white;
+            overflow: hidden;
+        }
+        .video-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .video-author-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: white;
+        }
+        .video-author-handle {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .video-title {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #ccc;
+            margin-bottom: 16px;
+            max-height: 100px;
+            overflow: hidden;
+        }
+        .video-stats {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .video-stats div {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .video-stats strong {
+            color: white;
+            font-weight: 700;
+        }
+        .download-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .dl-btn {
+            flex: 1;
+            min-width: 120px;
+            background: linear-gradient(135deg, var(--tiktok-pink), #ff1f5a);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .dl-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(254, 44, 85, 0.4);
+        }
+        .dl-btn.cyan {
+            background: linear-gradient(135deg, var(--tiktok-cyan), #1ed9d9);
+            color: #000;
+        }
+        .dl-btn.cyan:hover {
+            box-shadow: 0 8px 30px rgba(37, 244, 238, 0.4);
+        }
+        .dl-btn.ghost {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .dl-btn.ghost:hover {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+
+        /* ===== LOADING ===== */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .loader.show { display: block; }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--tiktok-pink);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loader p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* ===== ERROR ===== */
+        .error-box {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 14px;
+            padding: 16px 20px;
+            color: #fca5a5;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .error-box.show { display: block; }
+
+        /* ===== SEARCH GRID ===== */
+        .search-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .search-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .search-item:hover {
+            transform: translateY(-3px);
+            border-color: var(--tiktok-pink);
+            box-shadow: 0 8px 30px rgba(254, 44, 85, 0.2);
+        }
+        .search-thumb {
+            aspect-ratio: 9 / 16;
+            background: var(--dark-3);
+            position: relative;
+            overflow: hidden;
+        }
+        .search-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .search-info {
+            padding: 10px;
+        }
+        .search-info h4 {
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+        .search-info p {
+            font-size: 10px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ===== HASHTAG CARD ===== */
+        .hashtag-list {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .hashtag-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: 0.2s;
+        }
+        .hashtag-item:hover {
+            border-color: rgba(37, 244, 238, 0.3);
+            transform: translateX(4px);
+        }
+        .hashtag-rank {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(254, 44, 85, 0.2), rgba(37, 244, 238, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .hashtag-rank.top { background: linear-gradient(135deg, var(--tiktok-pink), var(--tiktok-cyan)); color: white; }
+        .hashtag-info { flex: 1; }
+        .hashtag-info h4 { font-size: 15px; font-weight: 700; color: white; }
+        .hashtag-info p { font-size: 12px; color: var(--text-muted); }
+        .hashtag-bar {
+            width: 100px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .hashtag-bar div {
+            height: 100%;
+            background: linear-gradient(90deg, var(--tiktok-pink), var(--tiktok-cyan));
+            border-radius: 10px;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--dark-3);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transition: 0.4s;
+            z-index: 1000;
+            opacity: 0;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+
+        /* ===== FOOTER ===== */
+        footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 30px 24px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        footer .heart { color: var(--tiktok-pink); }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 500px) {
+            .hero { padding: 40px 16px 20px; }
+            .tabs { padding: 0 16px; }
+            .tab { padding: 10px 14px; font-size: 13px; }
+            .panel { padding: 20px 16px 60px; }
+            .input-group { flex-direction: column; }
+            .input-group input { min-width: auto; }
+            .btn-main { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background -->
+    <div class="bg-glow"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">🎵</div>
+                <span class="logo-text">TIKTOKTOOLS</span>
+            </div>
+            <div class="nav-status">
+                <span></span>
+                Online
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-tag">⚡ Dlouis • Tools</div>
+        <h1>TikTok <span class="grad">Downloader</span></h1>
+        <p>🎵 TikTok Downloader • No Watermark • Search Video • Hashtag Analytics • Gunakan dengan bijak</p>
+    </section>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('download')">
+            📥 Download
+        </button>
+        <button class="tab" onclick="switchTab('search')">
+            🔍 Search
+        </button>
+        <button class="tab" onclick="switchTab('hashtag')">
+            📊 Hashtag
+        </button>
+    </div>
+
+    <!-- ==========================================
+         PANEL 1: DOWNLOAD
+         ========================================== -->
+    <div id="panel-download" class="panel active">
+        <div class="search-box">
+            <label>Tempel link TikTok kamu di sini</label>
+            <div class="input-group">
+                <input type="text" id="inputUrl" placeholder="https://www.tiktok.com/@username/video/1234567890">
+                <button class="btn-main" id="btnDownload" onclick="handleDownload()">
+                    📥 Download
+                </button>
+            </div>
+        </div>
+
+        <div class="mini-features">
+            <div class="mini-feat">
+                <div class="mini-feat-icon">💧</div>
+                <div class="mini-feat-title">Tanpa Watermark</div>
+                <div class="mini-feat-desc">Video bersih</div>
+            </div>
+            <div class="mini-feat">
+                <div class="mini-feat-icon">🎬</div>
+                <div class="mini-feat-title">Video HD</div>
+                <div class="mini-feat-desc">Kualitas terbaik</div>
+            </div>
+            <div class="mini-feat">
+                <div class="mini-feat-icon">🎵</div>
+                <div class="mini-feat-title">Audio MP3</div>
+                <div class="mini-feat-desc">Download sound</div>
+            </div>
+        </div>
+
+        <!-- Loader -->
+        <div class="loader" id="loaderDownload">
+            <div class="spinner"></div>
+            <p>Mengambil data video...</p>
+        </div>
+
+        <!-- Error -->
+        <div class="error-box" id="errorDownload"></div>
+
+        <!-- Result -->
+        <div class="result-container" id="resultDownload"></div>
+    </div>
+
+    <!-- ==========================================
+         PANEL 2: SEARCH
+         ========================================== -->
+    <div id="panel-search" class="panel">
+        <div class="search-box">
+            <label>Cari video TikTok berdasarkan keyword</label>
+            <div class="input-group">
+                <input type="text" id="inputSearch" placeholder="Contoh: dance challenge, resep masakan, dll">
+                <button class="btn-main" id="btnSearch" onclick="handleSearch()">
+                    🔍 Search
+                </button>
+            </div>
+        </div>
+
+        <div class="loader" id="loaderSearch">
+            <div class="spinner"></div>
+            <p>Mencari video...</p>
+        </div>
+
+        <div class="error-box" id="errorSearch"></div>
+        <div class="search-grid" id="searchResults"></div>
+    </div>
+
+    <!-- ==========================================
+         PANEL 3: HASHTAG
+         ========================================== -->
+    <div id="panel-hashtag" class="panel">
+        <div class="search-box">
+            <label>Cari analytics hashtag TikTok</label>
+            <div class="input-group">
+                <input type="text" id="inputHashtag" placeholder="Contoh: fyp, viral, dance">
+                <button class="btn-main" id="btnHashtag" onclick="handleHashtag()">
+                    📊 Analytics
+                </button>
+            </div>
+        </div>
+
+        <div class="loader" id="loaderHashtag">
+            <div class="spinner"></div>
+            <p>Menganalisis hashtag...</p>
+        </div>
+
+        <div class="error-box" id="errorHashtag"></div>
+        <div class="hashtag-list" id="hashtagResults"></div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 TikTokTools — Made with <span class="heart">❤</span> by TUAN ZEN</p>
+        <p style="margin-top: 6px; opacity: 0.6;">Clone by Dlouis</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // TAB SWITCHER
+        // ==========================================
+        function switchTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('panel-' + name).classList.add('active');
+        }
+
+        // ==========================================
+        // TOAST
+        // ==========================================
+        function showToast(msg, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ==========================================
+        // FORMAT NUMBER
+        // ==========================================
+        function formatNum(n) {
+            n = parseInt(n) || 0;
+            if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+            if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+            if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+            return n.toString();
+        }
+
+        // ==========================================
+        // DOWNLOAD HANDLER
+        // ==========================================
+        async function handleDownload() {
+            const url = document.getElementById('inputUrl').value.trim();
+            const btn = document.getElementById('btnDownload');
+            const loader = document.getElementById('loaderDownload');
+            const errorBox = document.getElementById('errorDownload');
+            const result = document.getElementById('resultDownload');
+
+            if (!url) return showToast('❌ Masukkan link TikTok dulu!', 'error');
+            if (!/tiktok\.com/.test(url)) return showToast('❌ Link TikTok gak valid!', 'error');
+
+            // Reset UI
+            errorBox.classList.remove('show');
+            result.classList.remove('show');
+            loader.classList.add('show');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/download?url=' + encodeURIComponent(url));
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.message || 'Gagal ambil data');
+
+                // Render result
+                const v = data.data;
+                result.innerHTML = `
+                    <div class="video-card">
+                        <div class="video-thumb">
+                            <img src="${v.cover}" alt="thumbnail" onerror="this.src='https://via.placeholder.com/300x500/1a1a1a/666?text=No+Cover'">
+                        </div>
+                        <div class="video-info">
+                            <div class="video-author">
+                                <div class="video-avatar">${v.author?.avatar ? `<img src="${v.author.avatar}">` : v.author?.unique_id?.charAt(0)?.toUpperCase() || '?'}</div>
+                                <div>
+                                    <div class="video-author-name">${v.author?.nickname || 'Unknown'}</div>
+                                    <div class="video-author-handle">@${v.author?.unique_id || 'user'}</div>
+                                </div>
+                            </div>
+                            <div class="video-title">${v.title || 'TikTok Video'}</div>
+                            <div class="video-stats">
+                                <div>❤️ <strong>${formatNum(v.stats?.digg_count)}</strong></div>
+                                <div>💬 <strong>${formatNum(v.stats?.comment_count)}</strong></div>
+                                <div>↗️ <strong>${formatNum(v.stats?.share_count)}</strong></div>
+                                <div>▶️ <strong>${formatNum(v.stats?.play_count)}</strong></div>
+                            </div>
+                            <div class="download-btns">
+                                <a class="dl-btn" href="${v.video_hd}" target="_blank" download>
+                                    ⬇️ Download HD
+                                </a>
+                                <a class="dl-btn cyan" href="${v.video_sd}" target="_blank" download>
+                                    ⬇️ Download SD
+                                </a>
+                                <a class="dl-btn ghost" href="${v.music}" target="_blank" download>
+                                    🎵 Audio MP3
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                result.classList.add('show');
+                showToast('✅ Video berhasil diambil!', 'success');
+
+            } catch (err) {
+                errorBox.textContent = '❌ ' + err.message;
+                errorBox.classList.add('show');
+                showToast('❌ Gagal ambil video', 'error');
+            } finally {
+                loader.classList.remove('show');
+                btn.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // SEARCH HANDLER
+        // ==========================================
+        async function handleSearch() {
+            const q = document.getElementById('inputSearch').value.trim();
+            const btn = document.getElementById('btnSearch');
+            const loader = document.getElementById('loaderSearch');
+            const errorBox = document.getElementById('errorSearch');
+            const results = document.getElementById('searchResults');
+
+            if (!q) return showToast('❌ Masukkan keyword dulu!', 'error');
+
+            errorBox.classList.remove('show');
+            results.innerHTML = '';
+            loader.classList.add('show');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.message || 'Gagal search');
+
+                if (data.data.length === 0) {
+                    errorBox.textContent = '📭 Gak ada hasil buat keyword itu.';
+                    errorBox.classList.add('show');
+                } else {
+                    results.innerHTML = data.data.map(v => `
+                        <div class="search-item" onclick="openVideo('${v.url}')">
+                            <div class="search-thumb">
+                                <img src="${v.cover}" alt="thumb" onerror="this.src='https://via.placeholder.com/300x500/1a1a1a/666?text=?'">
+                            </div>
+                            <div class="search-info">
+                                <h4>${v.title || 'Video'}</h4>
+                                <p>@${v.author || 'user'} • ${formatNum(v.plays)} plays</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    showToast(`✅ Ketemu ${data.data.length} video!`, 'success');
+                }
+            } catch (err) {
+                errorBox.textContent = '❌ ' + err.message;
+                errorBox.classList.add('show');
+            } finally {
+                loader.classList.remove('show');
+                btn.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // OPEN VIDEO (dari search)
+        // ==========================================
+        function openVideo(url) {
+            document.getElementById('inputUrl').value = url;
+            switchTab('download');
+            document.querySelectorAll('.tab')[0].classList.add('active');
+            document.querySelectorAll('.tab')[1].classList.remove('active');
+            document.querySelectorAll('.tab')[2].classList.remove('active');
+            handleDownload();
+        }
+
+        // ==========================================
+        // HASHTAG HANDLER
+        // ==========================================
+        async function handleHashtag() {
+            const q = document.getElementById('inputHashtag').value.trim();
+            const btn = document.getElementById('btnHashtag');
+            const loader = document.getElementById('loaderHashtag');
+            const errorBox = document.getElementById('errorHashtag');
+            const results = document.getElementById('hashtagResults');
+
+            if (!q) return showToast('❌ Masukkan hashtag dulu!', 'error');
+
+            errorBox.classList.remove('show');
+            results.innerHTML = '';
+            loader.classList.add('show');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/hashtag?q=' + encodeURIComponent(q));
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.message || 'Gagal ambil hashtag');
+
+                const maxViews = Math.max(...data.data.map(d => d.views));
+                results.innerHTML = data.data.map((h, i) => `
+                    <div class="hashtag-item">
+                        <div class="hashtag-rank ${i < 3 ? 'top' : ''}">${i + 1}</div>
+                        <div class="hashtag-info">
+                            <h4>#${h.tag}</h4>
+                            <p>${formatNum(h.views)} views • ${formatNum(h.videos)} videos</p>
+                        </div>
+                        <div class="hashtag-bar">
+                            <div style="width:${(h.views / maxViews) * 100}%"></div>
+                        </div>
+                    </div>
+                `).join('');
+                showToast('✅ Hashtag berhasil dianalisis!', 'success');
+
+            } catch (err) {
+                errorBox.textContent = '❌ ' + err.message;
+                errorBox.classList.add('show');
+            } finally {
+                loader.classList.remove('show');
+                btn.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // ENTER KEY SUBMIT
+        // ==========================================
+        document.getElementById('inputUrl').addEventListener('keypress', e => {
+            if (e.key === 'Enter') handleDownload();
+        });
+        document.getElementById('inputSearch').addEventListener('keypress', e => {
+            if (e.key === 'Enter') handleSearch();
+        });
+        document.getElementById('inputHashtag').addEventListener('keypress', e => {
+            if (e.key === 'Enter') handleHashtag();
+        });
+
+        console.log('%c🎵 TikTokTools', 'font-size:20px; font-weight:900; background:linear-gradient(90deg,#FE2C55,#25F4EE); -webkit-background-clip:text; -webkit-text-fill-color:transparent;');
+        console.log('%cClone by Dlouis', 'font-size:12px; color:#888;');
+    </script>
+
+</body>
+</html>
